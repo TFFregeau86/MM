@@ -65,3 +65,6 @@ During this lab you will:
 - When debugging, print tokens, scores, or intermediate choices.
 - Ask an AI assistant to help create edge case posts or unusual wording.
 - Try examples that mislead or confuse your model. Failure cases teach you the most.
+
+## Summary
+- This lab teaches students to build a Mood Machine that classifies short text posts into moods like positive, negative, neutral, or mixed. Students explore how rule-based systems score text using keywords, emojis, and negation, and how small datasets train a simple machine learning model. They often struggle with posts expressing mixed emotions, sarcasm, or subtle slang, which are difficult for rules to capture. AI helps highlight patterns and suggest rules or predictions, but it can mislead when it overgeneralizes or misses context. Comparing rule-based and ML approaches shows how data quality and labeling affect results. One way to guide students without giving the answer is to ask them to identify which words or emojis influence the mood most in a post with mixed cues, encouraging reasoning over memorization
