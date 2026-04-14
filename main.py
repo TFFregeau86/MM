@@ -26,7 +26,7 @@ def evaluate_rule_based(posts: List[str], labels: List[str]) -> float:
         if is_correct:
             correct += 1
 
-        # If you implement explain(), you can uncomment these lines:
+        # Optional explainability (Week 8 debugging tool)
         # reason = analyzer.explain(text)
         # print(f'"{text}" -> predicted={predicted_label}, true={true_label} ({reason})')
 
@@ -44,25 +44,17 @@ def evaluate_rule_based(posts: List[str], labels: List[str]) -> float:
 def run_batch_demo() -> None:
     """
     Run the MoodAnalyzer on the sample posts and print predictions only.
-
-    This is a quick way to see how your rules behave without comparing
-    to the true labels.
     """
     analyzer = MoodAnalyzer()
     print("\n=== Batch Demo on SAMPLE_POSTS (rule based) ===")
     for text in SAMPLE_POSTS:
         label = analyzer.predict_label(text)
-        # If explain() is implemented, show a short explanation.
-        # reason = analyzer.explain(text)
-        # print(f'"{text}" -> {label} ({reason})')
         print(f'"{text}" -> {label}')
 
 
 def run_interactive_loop() -> None:
     """
     Let the user type their own sentences and see the predicted mood.
-
-    Type 'quit' or press Enter on an empty line to exit.
     """
     analyzer = MoodAnalyzer()
     print("\n=== Interactive Mood Machine (rule based) ===")
@@ -76,16 +68,74 @@ def run_interactive_loop() -> None:
             break
 
         label = analyzer.predict_label(user_input)
-        # If explain() is implemented, you can include an explanation:
-        # reason = analyzer.explain(user_input)
-        # print(f"Model: {label} ({reason})")
         print(f"Model: {label}")
 
 
+# ---------------------------------------------------------------------
+# FIXED: Failure analysis (NO recursion bug)
+# ---------------------------------------------------------------------
+def show_failures(posts, labels):
+    analyzer = MoodAnalyzer()
+
+    print("\n=== RULE-BASED FAILURE CASES ===")
+
+    failures = []
+
+    for text, true_label in zip(posts, labels):
+        pred = analyzer.predict_label(text)
+
+        if pred != true_label:
+            failures.append((text, true_label, pred))
+
+            print("\n❌ TEXT:", text)
+            print("   expected:", true_label)
+            print("   got:", pred)
+
+    print("\n--- Failure Summary ---")
+    print("Total failures:", len(failures))
+    print("Failure rate:", len(failures) / len(posts) if posts else 0)
+
+    return failures
+
+
+# ---------------------------------------------------------------------
+# Week 8: Failure pattern analysis (RELIABILITY INSIGHT)
+# ---------------------------------------------------------------------
+def analyze_failure_patterns(failures):
+    """
+    Week 8: AI reliability debugging insight.
+    Shows where rule-based model breaks.
+    """
+
+    pattern_counts = {
+        "positive→negative": 0,
+        "negative→positive": 0,
+        "neutral→mixed": 0,
+        "mixed→other": 0,
+    }
+
+    for text, true, pred in failures:
+        key = f"{true}→{pred}"
+        if key in pattern_counts:
+            pattern_counts[key] += 1
+
+    print("\n=== FAILURE PATTERN ANALYSIS ===")
+    for k, v in pattern_counts.items():
+        print(f"{k}: {v}")
+
+
+# ---------------------------------------------------------------------
+# MAIN EXECUTION
+# ---------------------------------------------------------------------
 if __name__ == "__main__":
+
     evaluate_rule_based(SAMPLE_POSTS, TRUE_LABELS)
 
     run_batch_demo()
+
+    # Structured debugging output (Week 8 requirement)
+    failures = show_failures(SAMPLE_POSTS, TRUE_LABELS)
+    analyze_failure_patterns(failures)
 
     run_interactive_loop()
 

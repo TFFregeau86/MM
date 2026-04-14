@@ -2,10 +2,12 @@
 Shared data for the Mood Machine lab.
 
 This file defines:
-  - POSITIVE_WORDS: starter list of positive words
-  - NEGATIVE_WORDS: starter list of negative words
-  - SAMPLE_POSTS: short example posts for evaluation and training
-  - TRUE_LABELS: human labels for each post in SAMPLE_POSTS
+  - POSITIVE_WORDS
+  - NEGATIVE_WORDS
+  - NEUTRAL_WORDS
+  - SAMPLE_POSTS
+  - TRUE_LABELS
+  - EDGE_CASES (Week 8 reliability testing)
 """
 
 # ---------------------------------------------------------------------
@@ -21,7 +23,8 @@ POSITIVE_WORDS = [
 NEGATIVE_WORDS = [
     "sad", "bad", "terrible", "awful", "angry", "upset", "tired",
     "stressed", "hate", "boring", "ugh", "😭", "😩", "😔", "😬",
-    "nothing is going right", "stuck", "💀", "🥲", "anxious"
+    "stuck", "💀", "🥲", "anxious",
+    "nothing is going right"  # FIX: keep ONLY in negative (remove duplicate ambiguity issue)
 ]
 
 NEUTRAL_WORDS = [
@@ -29,10 +32,9 @@ NEUTRAL_WORDS = [
 ]
 
 # ---------------------------------------------------------------------
-# Starter labeled dataset
+# Dataset
 # ---------------------------------------------------------------------
 
-# Short example posts written as if they were social media updates or messages.
 SAMPLE_POSTS = [
     "I love this class so much",
     "Today was a terrible day",
@@ -50,7 +52,8 @@ SAMPLE_POSTS = [
     "So stressed about the exam tomorrow 😬",
     "Had a lovely dinner with friends 😊",
     "Not sure how I feel about this 🤔",
-    # New posts
+
+    # Week 8 edge cases
     "Lowkey stressed but kind of proud of myself 🥲",
     "Highkey excited for the concert tonight 😂",
     "I absolutely love getting stuck in traffic 💀",
@@ -62,55 +65,92 @@ SAMPLE_POSTS = [
 ]
 
 TRUE_LABELS = [
-    "positive",  # I love this class so much
-    "negative",  # Today was a terrible day
-    "mixed",     # Feeling tired but kind of hopeful
-    "neutral",   # This is fine
-    "positive",  # So excited for the weekend
-    "negative",  # I am not happy about this
-    "negative",  # Ugh, stuck in traffic again 😩
-    "positive",  # Finally finished my project! 🎉
-    "negative",  # Kinda sad that the party got canceled 😔
-    "neutral",   # Meh, today was okay, nothing special
-    "positive",  # Feeling pumped for my workout 💪
-    "negative",  # I can't believe I forgot my homework 😭
-    "neutral",   # Just chilling with some music 🎶
-    "negative",  # So stressed about the exam tomorrow 😬
-    "positive",  # Had a lovely dinner with friends 😊
-    "mixed",     # Not sure how I feel about this 🤔
-    # New labels
-    "mixed",     # Lowkey stressed but kind of proud of myself 🥲
-    "positive",  # Highkey excited for the concert tonight 😂
-    "negative",  # I absolutely love getting stuck in traffic 💀
-    "positive",  # No cap, this is the best movie I've seen this year 😍
-    "neutral",   # Feeling meh about everything today 😐
-    "mixed",     # I hate that I love this show so much 😅
-    "negative",  # Honestly, nothing is going right 💀🥲
-    "mixed"      # Chilling with friends, but kinda anxious 🫣
+    "positive",
+    "negative",
+    "mixed",
+    "neutral",
+    "positive",
+    "negative",
+    "negative",
+    "positive",
+    "negative",
+    "neutral",
+    "positive",
+    "negative",
+    "neutral",
+    "negative",
+    "positive",
+    "mixed",
+
+    "mixed",
+    "positive",
+    "negative",
+    "positive",
+    "neutral",
+    "mixed",
+    "negative",
+    "mixed"
 ]
 
-# TODO: Add 5-10 more posts and labels.
-#
-# Requirements:
-#   - For every new post you add to SAMPLE_POSTS, you must add one
-#     matching label to TRUE_LABELS.
-#   - SAMPLE_POSTS and TRUE_LABELS must always have the same length.
-#   - Include a variety of language styles, such as:
-#       * Slang ("lowkey", "highkey", "no cap")
-#       * Emojis (":)", ":(", "🥲", "😂", "💀")
-#       * Sarcasm ("I absolutely love getting stuck in traffic")
-#       * Ambiguous or mixed feelings
-#
-# Tips:
-#   - Try to create some examples that are hard to label even for you.
-#   - Make a note of any examples that you and a friend might disagree on.
-#     Those "edge cases" are interesting to inspect for both the rule based
-#     and ML models.
-#
-# Example of how you might extend the lists:
-#
-# SAMPLE_POSTS.append("Lowkey stressed but kind of proud of myself")
-# TRUE_LABELS.append("mixed")
-#
-# Remember to keep them aligned:
-#   len(SAMPLE_POSTS) == len(TRUE_LABELS)
+# ---------------------------------------------------------------------
+# WEEK 8 EDGE CASE TEST SET (NEW)
+# ---------------------------------------------------------------------
+
+EDGE_CASE_POSTS = [
+    "I love this but also hate it 💀",
+    "not bad not good just existing",
+    "this is fine 🙂 but actually I'm dying inside",
+    "lowkey happy but also stressed 🥲",
+    "I guess it's okay?? maybe??",
+]
+
+EDGE_CASE_LABELS = [
+    "mixed",
+    "neutral",
+    "mixed",
+    "mixed",
+    "neutral",
+]
+
+# ---------------------------------------------------------------------
+# Dataset Validation (WEEK 8 RELIABILITY SAFETY)
+# ---------------------------------------------------------------------
+
+def validate_dataset():
+    """
+    Ensures dataset integrity for AI evaluation.
+    """
+
+    if len(SAMPLE_POSTS) != len(TRUE_LABELS):
+        raise ValueError(
+            f"Dataset mismatch: {len(SAMPLE_POSTS)} posts vs {len(TRUE_LABELS)} labels"
+        )
+
+    allowed_labels = {"positive", "negative", "neutral", "mixed"}
+
+    for label in TRUE_LABELS:
+        if label not in allowed_labels:
+            raise ValueError(f"Invalid label found: {label}")
+
+    return True
+
+
+# Auto-run validation safely
+validate_dataset()
+
+# ---------------------------------------------------------------------
+# Dataset statistics (WEEK 8 DEBUG TOOL)
+# ---------------------------------------------------------------------
+
+def dataset_summary():
+    """
+    Returns dataset distribution for debugging model bias.
+    """
+
+    return {
+        "total_samples": len(SAMPLE_POSTS),
+        "positive": TRUE_LABELS.count("positive"),
+        "negative": TRUE_LABELS.count("negative"),
+        "neutral": TRUE_LABELS.count("neutral"),
+        "mixed": TRUE_LABELS.count("mixed"),
+    }

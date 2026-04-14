@@ -72,10 +72,11 @@ def evaluate_on_dataset(
 
     print("=== ML Model Evaluation on Dataset ===")
     correct = 0
+
     for text, true_label, pred_label in zip(texts, labels, preds):
-        is_correct = pred_label == true_label
-        if is_correct:
+        if pred_label == true_label:
             correct += 1
+
         print(f'"{text}" -> predicted={pred_label}, true={true_label}')
 
     accuracy = accuracy_score(labels, preds)
@@ -93,8 +94,26 @@ def predict_single_text(
     the trained ML model.
     """
     X = vectorizer.transform([text])
-    pred = model.predict(X)[0]
-    return pred
+    return model.predict(X)[0]
+
+
+# =========================================================
+# 🆕 WEEK 8 ADDITION: confidence-based prediction
+# =========================================================
+def predict_with_confidence(
+    text: str,
+    vectorizer: CountVectorizer,
+    model: LogisticRegression,
+):
+    """
+    Returns:
+      (prediction, confidence)
+    """
+    X = vectorizer.transform([text])
+    probs = model.predict_proba(X)[0]
+
+    idx = probs.argmax()
+    return model.classes_[idx], float(probs[idx])
 
 
 def run_interactive_loop(
@@ -104,8 +123,6 @@ def run_interactive_loop(
     """
     Let the user type their own sentences and see the ML model's
     predicted mood label.
-
-    Type 'quit' or press Enter on an empty line to exit.
     """
     print("\n=== Interactive Mood Machine (ML model) ===")
     print("Type a sentence to analyze its mood.")
@@ -121,19 +138,71 @@ def run_interactive_loop(
         print(f"ML model: {label}")
 
 
-if __name__ == "__main__":
-    print("Training an ML model on SAMPLE_POSTS and TRUE_LABELS from dataset.py...")
-    print("Make sure you have added enough labeled examples before running this.\n")
+# =========================================================
+# 🆕 WEEK 8 ADDITION: ML failure analysis
+# =========================================================
+def show_ml_failures(texts, labels, vectorizer, model):
+    print("\n=== ML FAILURE CASES ===")
 
-    # Train the model on the current dataset.
+    X = vectorizer.transform(texts)
+    preds = model.predict(X)
+
+    for text, true_label, pred in zip(texts, labels, preds):
+        if pred != true_label:
+            print("\n❌ TEXT:", text)
+            print("   expected:", true_label)
+            print("   got:", pred)
+
+
+# =========================================================
+# 🆕 WEEK 8 ADDITION: model comparison tool
+# =========================================================
+def compare_models(rule_model, vectorizer, ml_model):
+    from mood_analyzer import MoodAnalyzer
+
+    rule = MoodAnalyzer()
+
+    print("\n=== RULE vs ML COMPARISON ===")
+
+    for text, true_label in zip(SAMPLE_POSTS, TRUE_LABELS):
+
+        rule_pred = rule.predict_label(text)
+        ml_pred = predict_single_text(text, vectorizer, ml_model)
+
+        print("\nTEXT:", text)
+        print("TRUE:", true_label)
+        print("RULE:", rule_pred)
+        print("ML:  ", ml_pred)
+
+
+if __name__ == "__main__":
+    print("Training ML model on SAMPLE_POSTS and TRUE_LABELS...")
+    print("Make sure dataset is complete before running.\n")
+
     vectorizer, model = train_ml_model(SAMPLE_POSTS, TRUE_LABELS)
 
-    # Evaluate on the same dataset (training accuracy).
     evaluate_on_dataset(SAMPLE_POSTS, TRUE_LABELS, vectorizer, model)
 
-    # Let the user try their own examples.
     run_interactive_loop(vectorizer, model)
 
-    print("\nTip: Compare these predictions with the rule based model")
-    print("by running `python main.py`. Notice where they fail in")
-    print("similar ways and where they fail in different ways.")
+    print("\nTip: Compare ML vs Rule-based model using main.py")
+
+
+# =========================================================
+# 🧠 WEEK 8 SUMMARY
+# =========================================================
+"""
+ML SYSTEM CAPABILITIES:
+
+✔ Bag-of-words classification (CountVectorizer)
+✔ Logistic Regression classifier
+✔ Accuracy evaluation
+✔ Confidence scoring (probability-based)
+✔ Failure inspection tool
+✔ Rule vs ML comparison tool
+
+RELIABILITY INSIGHTS:
+- ML model handles patterns rule system misses
+- Rule model handles emojis + logic better
+- Both fail on sarcasm + ambiguity
+"""
